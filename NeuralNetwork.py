@@ -2,12 +2,15 @@
 # Imports
 #
 import numpy as np
+import sys
 
 #
 # Transfer functions
 #
-class TransferFunctions:
+import os
 
+
+class TransferFunctions:
     def sgm(x, Derivative=False):
         if not Derivative:
             return 1.0 / (1.0 + np.exp(-x))
@@ -111,7 +114,7 @@ class BackPropagationNetwork:
                 layerInput = self.weights[index].dot(np.vstack([self._layerOutput[-1], np.ones([1, lnCases])]))
 
             self._layerInput.append(layerInput)
-            self._layerOutput.append(self.tFuncs[index](TransferFunctions(),layerInput, False))
+            self._layerOutput.append(self.tFuncs[index](TransferFunctions(), layerInput, False))
 
         return self._layerOutput[-1].T
 
@@ -137,7 +140,8 @@ class BackPropagationNetwork:
             else:
                 # Compare to the following layer's delta
                 delta_pullback = self.weights[index + 1].T.dot(delta[-1])
-                delta.append(delta_pullback[:-1, :] * self.tFuncs[index](TransferFunctions(), self._layerInput[index], True))
+                delta.append(
+                    delta_pullback[:-1, :] * self.tFuncs[index](TransferFunctions(), self._layerInput[index], True))
 
         # Compute weight deltas
         for index in range(self.layerCount):
@@ -161,16 +165,67 @@ class BackPropagationNetwork:
 
         return error
 
+
+def read_digits_input(dirName):
+    all_digit_arrays = []
+    for filename in sorted(os.listdir(dirName)):
+        print(filename)
+        with open("./" + dirName + "/" + filename, "r") as myfile:
+            data = myfile.read()
+            input_data = data.replace("\n", "")
+
+            one_digit_array = [1]
+            i = 0
+            while i < 35:
+                if input_data[i] == "*":
+                    one_digit_array.append(1)
+                else:
+                    one_digit_array.append(0)
+                i += 1
+            # print(input_data)
+            # print(one_digit_array)
+            all_digit_arrays.append(one_digit_array)
+
+    return all_digit_arrays
+
+
+def read_digits_output(dirName):
+    all_output_arrays = []
+    for filename in sorted(os.listdir(dirName)):
+        print(filename)
+        with open("./" + dirName + "/" + filename, "r") as myfile:
+            data = myfile.read()
+            output_data = data.replace("\n", "")
+
+            one_digit_array = []
+            i = 35
+            while len(one_digit_array) < 10 and i < 60:
+                if output_data[i] == "0":
+                    one_digit_array.append(0)
+                else:
+                    if output_data[i] == "1":
+                        one_digit_array.append(1)
+                i += 1
+            # print(output_data)
+            # print(one_digit_array)
+            all_output_arrays.append(one_digit_array)
+
+    return all_output_arrays
+
 #
 # If run as a script, create a test object
 #
 if __name__ == "__main__":
 
-    lvInput = np.array([[0, 0], [1, 1], [0, 1], [1, 0]])
-    lvTarget = np.array([[0.00], [0.00], [1.00], [1.00]])
+    inputData = read_digits_input("trainingset")
+    outputData = read_digits_output("trainingset")
+    print(inputData)
+    print(outputData)
+    lvInput = np.array(inputData)
+    lvTarget = np.array(outputData)
     lFuncs = [None, TransferFunctions.tanh, TransferFunctions.linear]
 
-    bpn = BackPropagationNetwork((2, 2, 1), lFuncs)
+    bpn = BackPropagationNetwork((36, 36, 10), lFuncs)
 
     lnMax = 50000
     lnErr = 1e-6
