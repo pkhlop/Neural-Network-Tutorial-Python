@@ -7,6 +7,7 @@ import numpy as np
 # Transfer functions
 #
 class TransferFunctions:
+
     def sgm(x, Derivative=False):
         if not Derivative:
             return 1.0 / (1.0 + np.exp(-x))
@@ -14,7 +15,7 @@ class TransferFunctions:
             out = sgm(x)
             return out * (1.0 - out)
 
-    def linear(x, Derivative=False):
+    def linear(self, x, Derivative=False):
         if not Derivative:
             return x
         else:
@@ -26,7 +27,7 @@ class TransferFunctions:
         else:
             return -2 * x * np.exp(-x ** 2)
 
-    def tanh(x, Derivative=False):
+    def tanh(self, x, Derivative=False):
         if not Derivative:
             return np.tanh(x)
         else:
@@ -110,7 +111,7 @@ class BackPropagationNetwork:
                 layerInput = self.weights[index].dot(np.vstack([self._layerOutput[-1], np.ones([1, lnCases])]))
 
             self._layerInput.append(layerInput)
-            self._layerOutput.append(self.tFuncs[index](layerInput))
+            self._layerOutput.append(self.tFuncs[index](TransferFunctions(),layerInput, False))
 
         return self._layerOutput[-1].T
 
@@ -132,11 +133,11 @@ class BackPropagationNetwork:
                 # Compare to the target values
                 output_delta = self._layerOutput[index] - target.T
                 error = np.sum(output_delta ** 2)
-                delta.append(output_delta * self.tFuncs[index](self._layerInput[index], True))
+                delta.append(output_delta * self.tFuncs[index](TransferFunctions(), self._layerInput[index], True))
             else:
                 # Compare to the following layer's delta
                 delta_pullback = self.weights[index + 1].T.dot(delta[-1])
-                delta.append(delta_pullback[:-1, :] * self.tFuncs[index](self._layerInput[index], True))
+                delta.append(delta_pullback[:-1, :] * self.tFuncs[index](TransferFunctions(), self._layerInput[index], True))
 
         # Compute weight deltas
         for index in range(self.layerCount):
