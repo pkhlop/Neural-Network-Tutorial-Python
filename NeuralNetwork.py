@@ -9,6 +9,7 @@ import sys
 #
 import os
 
+#Razlichnie activacionnie funkcii
 
 class TransferFunctions:
     def sgm(x, Derivative=False):
@@ -89,6 +90,7 @@ class BackPropagationNetwork:
         self._previousWeightDelta = []
 
         # Create the weight arrays
+        # Soedinyaem uzli v raznih sloyah
         for (l1, l2) in zip(layerSize[:-1], layerSize[1:]):
             self.weights.append(np.random.normal(scale=0.01, size=(l2, l1 + 1)))
             self._previousWeightDelta.append(np.zeros((l2, l1 + 1)))
@@ -162,7 +164,6 @@ class BackPropagationNetwork:
             self.weights[index] -= weightDelta
 
             self._previousWeightDelta[index] = weightDelta
-
         return error
 
 
@@ -212,6 +213,11 @@ def read_digits_output(dirName):
 
     return all_output_arrays
 
+def show_result(lvInput, lvOutput):
+    for i in range(lvInput.shape[0]):
+        print("Rezultati trenirovki")
+        print("Input: {0} Output: {1}".format(lvInput[i], lvOutput[i]))
+
 #
 # If run as a script, create a test object
 #
@@ -219,19 +225,19 @@ if __name__ == "__main__":
 
     inputData = read_digits_input("trainingset")
     outputData = read_digits_output("trainingset")
-    print(inputData)
-    print(outputData)
+    #print(inputData)
+    #print(outputData)
     lvInput = np.array(inputData)
     lvTarget = np.array(outputData)
     lFuncs = [None, TransferFunctions.tanh, TransferFunctions.linear]
 
-    bpn = BackPropagationNetwork((36, 36, 10), lFuncs)
+    bpn = BackPropagationNetwork((36, 10, 10), lFuncs)
 
     lnMax = 50000
-    lnErr = 1e-6
+    lnErr = 1e-8
     for i in range(lnMax + 1):
-        err = bpn.TrainEpoch(lvInput, lvTarget, momentum=0.7)
-        if i % 5000 == 0 and i > 0:
+        err = bpn.TrainEpoch(lvInput, lvTarget, momentum=0.01, trainingRate=0.01)
+        if i % 500 == 0 and i > 0:
             print("Iteration {0:6d}K - Error: {1:0.6f}".format(int(i / 1000), err))
         if err <= lnErr:
             print("Desired error reached. Iter: {0}".format(i))
@@ -239,6 +245,16 @@ if __name__ == "__main__":
 
     # Display output
 
+    #training data
     lvOutput = bpn.Run(lvInput)
-    for i in range(lvInput.shape[0]):
-        print("Input: {0} Output: {1}".format(lvInput[i], lvOutput[i]))
+    show_result(lvInput, lvOutput)
+
+    #training data
+    testInputData = np.array(read_digits_input("testset"))
+    testOutputExpected = read_digits_output("testset")
+    testOutputComputed = bpn.Run(testInputData)
+    show_result(testInputData, testOutputComputed)
+
+    print("Test output")
+    #print(inputData)
+    #print(outputData)
