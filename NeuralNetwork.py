@@ -9,7 +9,7 @@ import sys
 #
 import os
 
-#Razlichnie activacionnie funkcii
+# Razlichnie activacionnie funkcii
 
 class TransferFunctions:
     def sgm(x, Derivative=False):
@@ -213,10 +213,24 @@ def read_digits_output(dirName):
 
     return all_output_arrays
 
+
 def show_result(lvInput, lvOutput):
     for i in range(lvInput.shape[0]):
-        print("Rezultati trenirovki")
-        print("Input: {0} Output: {1}".format(lvInput[i], lvOutput[i]))
+        print
+        print
+        print("Input:")
+        for j in range(1, len(lvInput[i])):
+            if lvInput[i][j] == 0:
+                print " ",
+            else:
+                print "*",
+            if j % 5 == 0:
+                print
+        print "Output: "
+        for j in range(0, len(lvOutput[i])):
+            print "{0}: {1:.4f}; ".format(j, lvOutput[i][j]),
+        print
+    print
 
 #
 # If run as a script, create a test object
@@ -225,8 +239,8 @@ if __name__ == "__main__":
 
     inputData = read_digits_input("trainingset")
     outputData = read_digits_output("trainingset")
-    #print(inputData)
-    #print(outputData)
+    # print(inputData)
+    # print(outputData)
     lvInput = np.array(inputData)
     lvTarget = np.array(outputData)
     lFuncs = [None, TransferFunctions.tanh, TransferFunctions.linear]
@@ -243,18 +257,21 @@ if __name__ == "__main__":
             print("Desired error reached. Iter: {0}".format(i))
             break
 
-    # Display output
+    # weights
+    # print bpn.weights
 
-    #training data
+    # Display output
+    # Run on training data
     lvOutput = bpn.Run(lvInput)
+    print("Rezultati trenirovki")
     show_result(lvInput, lvOutput)
 
-    #training data
+    # Run on testing data
     testInputData = np.array(read_digits_input("testset"))
-    testOutputExpected = read_digits_output("testset")
+    #testOutputExpected = read_digits_output("testset")
     testOutputComputed = bpn.Run(testInputData)
     show_result(testInputData, testOutputComputed)
 
     print("Test output")
-    #print(inputData)
-    #print(outputData)
+    # print(inputData)
+    # print(outputData)
